@@ -1,5 +1,5 @@
-add_subdirectory(../../../union-api union-api)
-add_subdirectory(../../../gothic-api gothic-api)
+add_subdirectory("union-api")
+add_subdirectory("gothic-api")
 
 # union
 if(GENERATE_UNION_API_DLL)
