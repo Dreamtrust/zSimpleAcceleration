@@ -1,9 +1,10 @@
-﻿name: "Plugin CI/CD"
+name: "Plugin CI/CD"
 
 on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,7 +27,8 @@ jobs:
  
       - name: Compile plugin
         run: |
-          cmake . --preset G2A-Release -DPROJECT_VERSION="${{ github.ref_name }}"
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          cmake . --preset G2A-Release -DPROJECT_VERSION="$version"
           cmake --build --preset G2A-Release
 
       - name: Find plugin
