@@ -28,6 +28,7 @@ jobs:
       - name: Compile plugin
         run: |
           $version = "${{ github.ref_name }}".TrimStart('v')
+          if (($version -split '\.').Count -eq 3) { $version += ".0" }
           cmake . --preset G2A-Release -DPROJECT_VERSION="$version"
           cmake --build --preset G2A-Release
 
