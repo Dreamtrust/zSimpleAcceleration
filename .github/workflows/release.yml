@@ -1,4 +1,4 @@
-name: "Plugin CI/CD"
+﻿name: "Plugin CI/CD"
 
 on:
   push:
@@ -26,8 +26,8 @@ jobs:
  
       - name: Compile plugin
         run: |
-          cmake . --preset MP-Release -DPROJECT_VERSION="${{ github.ref_name }}"
-          cmake --build --preset MP-Release
+          cmake . --preset G2A-Release -DPROJECT_VERSION="${{ github.ref_name }}"
+          cmake --build --preset G2A-Release
 
       - name: Find plugin
         run: |
