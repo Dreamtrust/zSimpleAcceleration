@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.21)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
@@ -12,14 +12,23 @@ project(zSimpleAcceleration
 	VERSION ${PROJECT_VERSION}
 )
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # By default template uses dynamically linked union-api target to avoid compatibility problems.
 # If you want to produce a standalone plugin, set this option to OFF
-set(GENERATE_UNION_API_DLL OFF)
+option(GENERATE_UNION_API_DLL "Generate UnionAPI.dll" ON)
+
+# If you want to embed Visual C++ Redist (not recommended for production)
+option(USE_STATIC_CRT "Use static MSVC runtime library (/MT)" OFF)
+
+if (USE_STATIC_CRT)
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	message(STATUS "[Build] Using Static CRT (/MT)")
+else()
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+	message(STATUS "[Build] Using Dynamic CRT (/MD)")
+endif()
 
 # By default template generates .vdf with the .dll and files form \vdf\_Work and \vdf\System
 # If you want to produce only the .dll, set this option to OFF

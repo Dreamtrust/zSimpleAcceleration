@@ -5,17 +5,17 @@ namespace Gothic_II_Addon
 {
 	const char* INI_SECTION = "ZSIMPLE_ACCELERATION";
 
-	// Настройки (типы / дефолт 1.2)
+	// РќР°СЃС‚СЂРѕР№РєРё (С‚РёРї / РґРµС„РѕР»С‚ 1.2)
 	float speedMultiplier = 1.2f;
 	int speedHotkey = KEY_U;
 	
-	// Состояние
+	// РЎРѕСЃС‚РѕСЏРЅРёРµ
 	static bool isFastMode = false;
 	static int messageTimer = 0;
 	static zSTRING currentMessage = "";
 
 	// -------------------------------------------------------
-	// Таблица: имя клавиши (как в INI) -> DirectInput скан-код
+	// РўР°Р±Р»РёС†Р°: РёРјСЏ РєР»Р°РІРёС€Рё (РєР°Рє РІ INI) -> DirectInput СЃРєР°РЅ-РєРѕРґ
 	// -------------------------------------------------------
 	struct KeyEntry { const char* name; int code; };
 	static const KeyEntry KEY_TABLE[] = {
@@ -69,7 +69,7 @@ namespace Gothic_II_Addon
 		{ "KEY_END",        0xCF }, { "KEY_DOWN",       0xD0 },
 		{ "KEY_NEXT",       0xD1 }, { "KEY_INSERT",     0xD2 },
 		{ "KEY_DELETE",     0xD3 },
-		// Алиасы
+		// в””С‹С€СЂС‘в€љ
 		{ "KEY_BACKSPACE",  0x0E }, { "KEY_ENTER",      0x1C },
 		{ "KEY_LALT",       0x38 }, { "KEY_RALT",       0xB8 },
 		{ "KEY_CAPSLOCK",   0x3A }, { "KEY_PGUP",       0xC9 },
@@ -79,10 +79,10 @@ namespace Gothic_II_Addon
 	};
 	static const int KEY_TABLE_SIZE = sizeof(KEY_TABLE) / sizeof(KEY_TABLE[0]);
 
-	// Конвертирует имя типа "KEY_U" в скан-код. Возвращает 0 если не найдено.
+	// РљРѕРЅРІРµСЂС‚РёСЂСѓРµС‚ РёРјСЏ С‚РёРїР° "KEY_U" РІ СЃРєР°РЅ-РєРѕРґ. Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅРѕ.
 	int KeyNameToScanCode(zSTRING const& name)
 	{
-		// Приводим к верхнему регистру для надёжности
+		// РџСЂРёРІРѕРґРёРј Рє РІРµСЂС…РЅРµРјСѓ СЂРµРіРёСЃС‚СЂСѓ РґР»СЏ РЅР°РґРµР¶РЅРѕСЃС‚Рё
 		zSTRING upper = name;
 		upper.Upper();
 		for (int i = 0; i < KEY_TABLE_SIZE; i++) {
@@ -90,14 +90,14 @@ namespace Gothic_II_Addon
 				return KEY_TABLE[i].code;
 			}
 		}
-		// Если пользователь написал число напрямую (например "22")
+		// Р•СЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅР°РїРёСЃР°Р» С‡РёСЃР»Рѕ РЅР°РїСЂСЏРјСѓСЋ (РЅР°РїСЂРёРјРµСЂ "22")
 		int direct = upper.ToInt();
 		return direct;
 	}
 
 	void Game_Init()
 	{
-		// 1. Записать дефолт в конфиг (если нет записи)
+		// 1. Р—Р°РїРёСЃР°С‚СЊ РґРµС„РѕР»С‚ РІ РєРѕРЅС„РёРі (РµСЃР»Рё РЅРµС‚ Р·Р°РїРёСЃРё)
 		if (!zoptions->EntryExists(INI_SECTION, "Hotkey")) {
 			zoptions->WriteString(INI_SECTION, "Hotkey", "KEY_U", FALSE);
 		}
@@ -105,14 +105,14 @@ namespace Gothic_II_Addon
 			zoptions->WriteReal(INI_SECTION, "Multiplier", 1.2f, FALSE);
 		}
 
-		// 2. Читаем множитель скорости
+		// 2. Р§РёС‚Р°РµРј РјРЅРѕР¶РёС‚РµР»СЊ СЃРєРѕСЂРѕСЃС‚Рё
 		speedMultiplier = zoptions->ReadReal(INI_SECTION, "Multiplier", 1.2f);
 
-		// 3. Читаем хоткей по имени: "KEY_U", "KEY_F", "KEY_F5" и т.д.
+		// 3. Р§РёС‚Р°РµРј С…РѕС‚РєРµР№ РїРѕ РёРјРµРЅРё: "KEY_U", "KEY_F", "KEY_F5" Рё С‚.Рґ.
 		zSTRING keyName = zoptions->ReadString(INI_SECTION, "Hotkey", "KEY_U");
 		speedHotkey = KeyNameToScanCode(keyName);
 		if (speedHotkey <= 0) {
-			speedHotkey = KEY_U; // дефолт если имя не найдено
+			speedHotkey = KEY_U; // РґРµС„РѕР»С‚ РµСЃР»Рё РёРјСЏ РЅРµ РЅР°Р№РґРµРЅРѕ
 		}
 	}
 void Game_Loop()
@@ -127,7 +127,7 @@ void Game_Loop()
 				model->timeScale = isFastMode ? speedMultiplier : 1.0f;
 			}
 
-			currentMessage = isFastMode ? "Ускорение: ВКЛ" : "Ускорение: ВЫКЛ";
+			currentMessage = isFastMode ? "РЈСЃРєРѕСЂРµРЅРёРµ: Р’РљР›" : "РЈСЃРєРѕСЂРµРЅРёРµ: Р’Р«РљР›";
 			messageTimer = 180; 
 		}
 
@@ -138,7 +138,7 @@ void Game_Loop()
 	}
 
 	// ==========================================================
-	// ХУК: Основной цикл мира (MainWorld_Render)
+	// РҐРЈРљ: РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РјРёСЂР° (MainWorld_Render)
 	// ==========================================================
 	void __fastcall Hook_oCGame_MainWorld_Render(Union::Registers& reg);
 	auto Partial_zCWorld_Render = Union::CreatePartialHook(reinterpret_cast<void*>(zSwitch(0x0063DC76, 0x0066498B, 0x0066BA76, 0x006C87EB)), &Hook_oCGame_MainWorld_Render);
@@ -148,7 +148,7 @@ void Game_Loop()
 	}
 
 	// ==========================================================
-	// ХУК: Инициализация игры
+	// РҐРЈРљ: РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РёРіСЂС‹
 	// ==========================================================
 	void __fastcall Hook_oCGame_Init(oCGame* self, void* vtable);
 	auto Ivk_oCGame_Init = Union::CreateHook(reinterpret_cast<void*>(zSwitch(0x00636F50, 0x0065D480, 0x006646D0, 0x006C1060)), &Hook_oCGame_Init, Union::HookType::Hook_Detours);
@@ -158,7 +158,7 @@ void Game_Loop()
 		Game_Init();
 	}
 
-	// Заглушки Union
+	// Р—Р°РіР»СѓС€РєРё Union
 	void Game_EntryPoint() {}
 	void Game_Exit() {}
 	void Game_PreLoop() {}
