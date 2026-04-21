@@ -12,7 +12,7 @@ namespace Gothic_II_Addon
 	// Состояние
 	static bool isFastMode = false;
 	static int messageTimer = 0;
-	static zSTRING currentMessage = "";
+	static char currentMessage[128] = "";
 
 	// -------------------------------------------------------
 	// Таблица: имя клавиши (как в INI) -> DirectInput скан-код
@@ -127,13 +127,15 @@ void Game_Loop()
 				model->timeScale = isFastMode ? speedMultiplier : 1.0f;
 			}
 
-			currentMessage = isFastMode ? "Ускорение: ВКЛ" : "Ускорение: ВЫКЛ";
+			const char* msg = isFastMode ? "Ускорение: ВКЛ" : "Ускорение: ВЫКЛ";
+			strncpy(currentMessage, msg, sizeof(currentMessage) - 1);
+			currentMessage[sizeof(currentMessage) - 1] = '\0';
 			messageTimer = 180; 
 		}
 
 		if (messageTimer > 0) {
 			messageTimer--;
-			screen->PrintCX(4000, currentMessage);
+			screen->PrintCX(7000, zSTRING(currentMessage));
 		}
 	}
 
@@ -168,12 +170,18 @@ void Game_Loop()
 	void Game_SaveEnd() {}
 	void LoadBegin() {}
 	void LoadEnd() {}
-	void Game_LoadBegin_NewGame() { LoadBegin(); }
-	void Game_LoadEnd_NewGame() { LoadEnd(); }
-	void Game_LoadBegin_SaveGame() { LoadBegin(); }
-	void Game_LoadEnd_SaveGame() { LoadEnd(); }
-	void Game_LoadBegin_ChangeLevel() { LoadBegin(); }
-	void Game_LoadEnd_ChangeLevel() { LoadEnd(); }
+	// Обнуляем состояние ускорения при загрузке (чтобы не было рассинхрона со скоростью модели)
+	void ResetState() {
+		isFastMode = false;
+		messageTimer = 0;
+	}
+
+	void Game_LoadBegin_NewGame() { ResetState(); }
+	void Game_LoadEnd_NewGame() {}
+	void Game_LoadBegin_SaveGame() { ResetState(); }
+	void Game_LoadEnd_SaveGame() {}
+	void Game_LoadBegin_ChangeLevel() { ResetState(); }
+	void Game_LoadEnd_ChangeLevel() {}
 	void Game_LoadBegin_TriggerChangeLevel() {}
 	void Game_LoadEnd_TriggerChangeLevel() {}
 	void Game_Pause() {}
