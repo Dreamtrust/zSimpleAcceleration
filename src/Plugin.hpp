@@ -17,6 +17,21 @@ namespace Gothic_II_Addon
 	static char textSpeedOn[64]   = "";
 	static char textSpeedOff[64]  = "";
 
+	// --- СИНГЛТОН ОБЩЕГО СОСТОЯНИЯ ---
+	struct SharedState_Heartbeat {
+		bool isMadness;
+		bool isWounded;
+	};
+
+	inline SharedState_Heartbeat* GetHeartbeatState() {
+		return (SharedState_Heartbeat*)Union::CreateSharedSingleton("NAZYM_HEARTBEAT_STATE", []() -> void* {
+			SharedState_Heartbeat* state = new SharedState_Heartbeat();
+			state->isMadness = false;
+			state->isWounded = false;
+			return state;
+		});
+	}
+
 	// -------------------------------------------------------
 	// Таблица: имя клавиши (как в INI) -> DirectInput скан-код
 	// -------------------------------------------------------
@@ -137,11 +152,29 @@ namespace Gothic_II_Addon
 			speedHotkey = KEY_U; // дефолт если имя не найдено
 		}
 	}
-void Game_Loop()
+
+	void ResetState() {
+		isFastMode = false;
+		messageTimer = 0;
+	}
+
+	void Game_Loop()
 	{
 		if (!oCNpc::player) return;
 
+		SharedState_Heartbeat* hbShared = GetHeartbeatState();
+		bool isHeartbeatBlocking = hbShared && (hbShared->isMadness || hbShared->isWounded);
+
+		// Если началось Безумие или Ранение, а плагин ускорен — мягко выключаемся
+		if (isHeartbeatBlocking && isFastMode) {
+			ResetState();
+		}
+
 		if (zinput->KeyToggled(speedHotkey)) {
+			if (isHeartbeatBlocking) {
+				return; // Игнорируем нажатия пока Heartbeat активен
+			}
+
 			isFastMode = !isFastMode;
 
 			zCModel* model = oCNpc::player->GetModel();
@@ -159,7 +192,11 @@ void Game_Loop()
 
 		if (messageTimer > 0) {
 			messageTimer--;
-			screen->PrintCX(7000, zSTRING(currentMessage));
+			static zSTRING cachedMsg;
+			if (messageTimer == 179) { // Только что включили таймер, кэшируем строку ОДИН раз
+				cachedMsg = currentMessage;
+			}
+			screen->PrintCX(7000, cachedMsg);
 		}
 	}
 
@@ -195,11 +232,6 @@ void Game_Loop()
 	void LoadBegin() {}
 	void LoadEnd() {}
 	// Обнуляем состояние ускорения при загрузке (чтобы не было рассинхрона со скоростью модели)
-	void ResetState() {
-		isFastMode = false;
-		messageTimer = 0;
-	}
-
 	void Game_LoadBegin_NewGame() { ResetState(); }
 	void Game_LoadEnd_NewGame() {}
 	void Game_LoadBegin_SaveGame() { ResetState(); }
