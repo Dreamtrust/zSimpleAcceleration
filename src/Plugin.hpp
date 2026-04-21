@@ -12,7 +12,10 @@ namespace Gothic_II_Addon
 	// Состояние
 	static bool isFastMode = false;
 	static int messageTimer = 0;
+	static int showMessages = 1;
 	static char currentMessage[128] = "";
+	static char textSpeedOn[64]   = "";
+	static char textSpeedOff[64]  = "";
 
 	// -------------------------------------------------------
 	// Таблица: имя клавиши (как в INI) -> DirectInput скан-код
@@ -104,11 +107,30 @@ namespace Gothic_II_Addon
 		if (!zoptions->EntryExists(INI_SECTION, "Multiplier")) {
 			zoptions->WriteReal(INI_SECTION, "Multiplier", 1.2f, FALSE);
 		}
+		if (!zoptions->EntryExists(INI_SECTION, "TextSpeedOn")) {
+			zoptions->WriteString(INI_SECTION, "TextSpeedOn", "\xD3\xF1\xEA\xEE\xF0\xE5\xED\xE8\xE5: \xC2\xCA\xCB", FALSE);
+		}
+		if (!zoptions->EntryExists(INI_SECTION, "TextSpeedOff")) {
+			zoptions->WriteString(INI_SECTION, "TextSpeedOff", "\xD3\xF1\xEA\xEE\xF0\xE5\xED\xE8\xE5: \xC2\xDB\xCA\xCB", FALSE);
+		}
+		if (!zoptions->EntryExists(INI_SECTION, "ShowMessages")) {
+			zoptions->WriteInt(INI_SECTION, "ShowMessages", 1, FALSE);
+		}
 
-		// 2. Читаем множитель скорости
+		// 2. Читаем множитель скорости и настройки отображения
 		speedMultiplier = zoptions->ReadReal(INI_SECTION, "Multiplier", 1.2f);
+		showMessages = zoptions->ReadInt(INI_SECTION, "ShowMessages", 1);
 
-		// 3. Читаем хоткей по имени: "KEY_U", "KEY_F", "KEY_F5" и т.д.
+		// 3. Читаем локализацию
+		zSTRING strOn = zoptions->ReadString(INI_SECTION, "TextSpeedOn", "\xD3\xF1\xEA\xEE\xF0\xE5\xED\xE8\xE5: \xC2\xCA\xCB");
+		strncpy(textSpeedOn, strOn.ToChar(), sizeof(textSpeedOn) - 1);
+		textSpeedOn[sizeof(textSpeedOn) - 1] = '\0';
+
+		zSTRING strOff = zoptions->ReadString(INI_SECTION, "TextSpeedOff", "\xD3\xF1\xEA\xEE\xF0\xE5\xED\xE8\xE5: \xC2\xDB\xCA\xCB");
+		strncpy(textSpeedOff, strOff.ToChar(), sizeof(textSpeedOff) - 1);
+		textSpeedOff[sizeof(textSpeedOff) - 1] = '\0';
+
+		// 4. Читаем хоткей по имени
 		zSTRING keyName = zoptions->ReadString(INI_SECTION, "Hotkey", "KEY_U");
 		speedHotkey = KeyNameToScanCode(keyName);
 		if (speedHotkey <= 0) {
@@ -127,10 +149,12 @@ void Game_Loop()
 				model->timeScale = isFastMode ? speedMultiplier : 1.0f;
 			}
 
-			const char* msg = isFastMode ? "Ускорение: ВКЛ" : "Ускорение: ВЫКЛ";
-			strncpy(currentMessage, msg, sizeof(currentMessage) - 1);
-			currentMessage[sizeof(currentMessage) - 1] = '\0';
-			messageTimer = 180; 
+			if (showMessages) {
+				const char* msg = isFastMode ? textSpeedOn : textSpeedOff;
+				strncpy(currentMessage, msg, sizeof(currentMessage) - 1);
+				currentMessage[sizeof(currentMessage) - 1] = '\0';
+				messageTimer = 180; 
+			}
 		}
 
 		if (messageTimer > 0) {
